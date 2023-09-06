@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { SanityCheckModule } from './sanity-check.module';
+import { SanityCheckModule } from '../modules/sanity-check/sanity-check.module';
 import * as supertest from 'supertest';
 
 describe('SanityCheckModule', () => {
