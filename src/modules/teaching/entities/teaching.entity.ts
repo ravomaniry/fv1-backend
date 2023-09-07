@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ProgressEntity } from 'src/modules/progress/entities/progress.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('teachings')
 export class TeachingEntity {
@@ -13,4 +14,7 @@ export class TeachingEntity {
 
   @Column('simple-json', { nullable: false })
   content: any;
+
+  @OneToMany(() => ProgressEntity, (progress) => progress.teaching)
+  progresses: ProgressEntity[];
 }

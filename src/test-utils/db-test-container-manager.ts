@@ -30,7 +30,6 @@ export class DbTestContainerManager {
       ...this.getDbCredentials(),
       synchronize: false,
       migrationsRun: false,
-      logging: false,
       namingStrategy: new SnakeNamingStrategy(),
     });
   }
@@ -48,8 +47,13 @@ export class DbTestContainerManager {
   }
 
   async runMigrations() {
-    await this.internalDataSource.runMigrations();
-    this.logger.log('Migrations executed');
+    try {
+      await this.internalDataSource.runMigrations();
+      this.logger.log('Migrations executed');
+    } catch (error) {
+      this.logger.error('Unable to execute migrations.');
+      throw new Error('Unable to execute migrations ' + error);
+    }
   }
 
   async startAndRunMigrations() {
