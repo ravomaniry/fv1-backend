@@ -65,13 +65,12 @@ export class DbTestContainerManager {
    * This can be used in afterEach to re-create the database.
    * It's more faster than starting a new container
    */
-  async recreateDatabase() {
+  async deleteAllTables() {
     const dbName = this.startedContainer.getDatabase();
     await this.internalDataSource.query(`DROP DATABASE ${dbName}`);
     await this.internalDataSource.query(`CREATE DATABASE ${dbName}`);
     await this.internalDataSource.query(`USE ${dbName}`);
-    this.logger.log('Database dopped and re-created.');
-    await this.runMigrations();
+    this.logger.log('All tables are deleted');
   }
 
   async stop() {

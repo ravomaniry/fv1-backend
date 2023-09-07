@@ -2,15 +2,14 @@ import { Test } from '@nestjs/testing';
 import { ProgressEntity } from 'src/modules/progress/entities/progress.entity';
 import { TeachingEntity } from 'src/modules/teaching/entities/teaching.entity';
 import { UserEntity } from 'src/modules/user/entities/user.entity';
-import { DbTestContainerManager } from 'src/test-utils/db-test-container-manager';
+import { useTcManagerFixture } from 'src/test-utils/db-fixture';
 import { DataSource } from 'typeorm';
 
 describe('ProgressEntity', () => {
-  const tcManager = new DbTestContainerManager();
+  const tcManager = useTcManagerFixture();
   let dataSource: DataSource;
 
   beforeAll(async () => {
-    await tcManager.startAndRunMigrations();
     const moduleRef = await Test.createTestingModule({
       imports: [tcManager.createTypeOrmModule()],
     }).compile();
@@ -61,6 +60,4 @@ describe('ProgressEntity', () => {
       }),
     ]);
   });
-
-  afterAll(() => tcManager.stop());
 });

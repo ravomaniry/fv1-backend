@@ -1,14 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { TeachingEntity } from 'src/modules/teaching/entities/teaching.entity';
-import { DbTestContainerManager } from 'src/test-utils/db-test-container-manager';
+import { useTcManagerFixture } from 'src/test-utils/db-fixture';
 import { DataSource } from 'typeorm';
 
 describe('TeachingEntity', () => {
-  const tcManager = new DbTestContainerManager();
+  const tcManager = useTcManagerFixture();
   let dataSource: DataSource;
 
   beforeAll(async () => {
-    await tcManager.startAndRunMigrations();
     const moduleRef = await Test.createTestingModule({
       imports: [tcManager.createTypeOrmModule()],
     }).compile();
@@ -33,6 +32,4 @@ describe('TeachingEntity', () => {
       }),
     ]);
   });
-
-  afterAll(() => tcManager.stop());
 });
