@@ -19,7 +19,7 @@ export class DbTestContainerManager {
     this.startedContainer = await this.container.start();
     this.internalDataSource = new DataSource({
       ...this.getDbCredentials(),
-      migrations: [join(process.cwd(), 'src/migrations/*.ts')],
+      migrations: [this.joinWithRootDir('src/migrations/*.ts')],
     });
     await this.internalDataSource.initialize();
     this.logger.log(`Db started ${this.startedContainer.getPort()}`);
@@ -42,8 +42,12 @@ export class DbTestContainerManager {
       database: this.startedContainer.getDatabase(),
       username: this.startedContainer.getUsername(),
       password: this.startedContainer.getUserPassword(),
-      entities: [join(process.cwd(), 'src/modules/*/entities/*.entity.ts')],
+      entities: [this.joinWithRootDir('src/modules/*/entities/*.entity.ts')],
     };
+  }
+
+  private joinWithRootDir(relativePath: string) {
+    return join(__dirname, '../..', relativePath);
   }
 
   async runMigrations() {
@@ -63,7 +67,7 @@ export class DbTestContainerManager {
 
   /**
    * This can be used in afterEach to re-create the database.
-   * It's more faster than starting a new container
+   * It's faster than starting a new container
    */
   async deleteAllTables() {
     const dbName = this.startedContainer.getDatabase();
