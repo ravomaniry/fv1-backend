@@ -5,13 +5,14 @@ import { UserModule } from '../../modules/user/user.module';
 import { UserEntity } from '../../modules/user/entities/user.entity';
 import { useTcManagerFixture } from '../../test-utils/db-fixture';
 import { INestApplication } from '@nestjs/common';
+import { ErrorCodesEnum } from '../../common/http-errors';
 
 describe('UserModule', () => {
   const tcManger = useTcManagerFixture();
   let dataSource: DataSource;
   let app: INestApplication;
   const originalPw = 'password0';
-  const hashOfPw =
+  const hashedPassword =
     '174a8a2a669666eed14ae43a20b1036ab1154d14bb5831822114f63e585fd11d';
 
   beforeAll(async () => {
@@ -23,45 +24,98 @@ describe('UserModule', () => {
     await app.init();
   });
 
-  it.each([
-    {
-      payload: { username: 'user1', password: originalPw },
-      responseCode: 401,
-      responseBody: {
-        statusCode: 401,
-        message: 'Invalid credentials.',
-        error: 'Unauthorized',
+  describe('/login', () => {
+    it.each([
+      {
+        payload: { username: 'user1', password: originalPw },
+        responseCode: 401,
+        responseBody: { code: ErrorCodesEnum.invalidCredentials },
       },
-    },
-    {
-      payload: { username: 'user0', password: 'wrongPassword' },
-      responseCode: 401,
-      responseBody: {
-        statusCode: 401,
-        message: 'Invalid credentials.',
-        error: 'Unauthorized',
+      {
+        payload: { username: 'user0', password: 'wrongPassword' },
+        responseCode: 401,
+        responseBody: { code: ErrorCodesEnum.invalidCredentials },
       },
-    },
-    {
-      payload: { username: 'user0', password: originalPw },
-      responseCode: 200,
-      responseBody: { id: 1, username: 'user0' },
-    },
-  ])('Login: %o', async ({ payload, responseCode, responseBody }) => {
-    await dataSource.transaction(async (em) => {
-      await em.save(
-        em.create(UserEntity, {
-          id: 1,
-          username: 'user0',
-          hashedPassword: hashOfPw,
-        }),
-      );
-    });
-    await supertest(app.getHttpServer())
-      .post('/user/login')
-      .send(payload)
-      .expect(responseCode)
-      .expect(responseBody);
+      {
+        payload: { username: 'user0', password: originalPw },
+        responseCode: 200,
+        responseBody: {
+          user: { id: 1, username: 'user0' },
+          tokens: { accessToken: '', refreshToken: '' },
+        },
+      },
+    ])(
+      '$payload $responseCode',
+      async ({ payload, responseCode, responseBody }) => {
+        await dataSource.transaction(async (em) => {
+          await em.save(
+            em.create(UserEntity, {
+              id: 1,
+              username: 'user0',
+              hashedPassword: hashedPassword,
+            }),
+          );
+        });
+        await supertest(app.getHttpServer())
+          .post('/user/login')
+          .send(payload)
+          .expect(responseCode)
+          .expect((resp) =>
+            expect(resp.body).toEqual(expect.objectContaining(responseBody)),
+          );
+      },
+    );
+  });
+
+  describe('/register', () => {
+    it.each([
+      {
+        payload: { username: 'existingUser', password: 'longPassword' },
+        responseCode: 400,
+        responseBody: { code: ErrorCodesEnum.userExists },
+        usersInDb: [expect.objectContaining({ username: 'existingUser' })],
+      },
+      {
+        payload: { username: 'newUser', password: 'short' },
+        responseCode: 400,
+        responseBody: { code: ErrorCodesEnum.weakPassword },
+        usersInDb: [expect.objectContaining({ username: 'existingUser' })],
+      },
+      {
+        payload: { username: 'user0', password: originalPw },
+        responseCode: 201,
+        responseBody: {
+          user: { id: expect.any(Number), username: 'user0' },
+          tokens: { accessToken: '', refreshToken: '' },
+        },
+        usersInDb: [
+          expect.objectContaining({ username: 'existingUser' }),
+          expect.objectContaining({ username: 'user0', hashedPassword }),
+        ],
+      },
+    ])(
+      '$payload $responseCode',
+      async ({ payload, responseCode, responseBody, usersInDb }) => {
+        await dataSource.manager.transaction(async (em) => {
+          await em.save(
+            em.create(UserEntity, {
+              username: 'existingUser',
+              hashedPassword: 'p0',
+            }),
+          );
+        });
+        await supertest(app.getHttpServer())
+          .post('/user/register')
+          .send(payload)
+          .expect(responseCode)
+          .expect((resp) =>
+            expect(resp.body).toEqual(expect.objectContaining(responseBody)),
+          );
+        await expect(dataSource.manager.find(UserEntity)).resolves.toEqual(
+          usersInDb,
+        );
+      },
+    );
   });
 
   afterAll(() => app.close());
