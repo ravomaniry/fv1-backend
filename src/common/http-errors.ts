@@ -5,4 +5,5 @@ export enum ErrorCodesEnum {
   invalidCredentials = 'invalidCredentials',
   userExists = 'userExists',
   weakPassword = 'weakPassword',
+  unknownError = 'unknownError',
 }

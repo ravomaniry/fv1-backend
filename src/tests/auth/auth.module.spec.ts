@@ -1,13 +1,13 @@
 import * as supertest from 'supertest';
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
-import { UserModule } from '../../modules/user/user.module';
+import { AuthModule } from '../../modules/auth/auth.module';
 import { UserEntity } from '../../modules/user/entities/user.entity';
 import { useTcManagerFixture } from '../../test-utils/db-fixture';
 import { INestApplication } from '@nestjs/common';
 import { ErrorCodesEnum } from '../../common/http-errors';
 
-describe('UserModule', () => {
+describe('AuthModule', () => {
   const tcManger = useTcManagerFixture();
   let dataSource: DataSource;
   let app: INestApplication;
@@ -17,7 +17,7 @@ describe('UserModule', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [tcManger.createTypeOrmModule(), UserModule],
+      imports: [tcManger.createTypeOrmModule(), AuthModule],
     }).compile();
     dataSource = moduleRef.get(DataSource);
     app = moduleRef.createNestApplication();
@@ -57,7 +57,7 @@ describe('UserModule', () => {
           );
         });
         await supertest(app.getHttpServer())
-          .post('/user/login')
+          .post('/auth/login')
           .send(payload)
           .expect(responseCode)
           .expect((resp) =>
@@ -105,7 +105,7 @@ describe('UserModule', () => {
           );
         });
         await supertest(app.getHttpServer())
-          .post('/user/register')
+          .post('/auth/register')
           .send(payload)
           .expect(responseCode)
           .expect((resp) =>
