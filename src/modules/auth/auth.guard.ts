@@ -5,17 +5,24 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '../config/config.service';
-import { isPublicKey } from './auth.annotations';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { isPublicKey } from './auth.annotations';
+import { AppJwtConfig } from 'src/config/jwt-config.interface';
+import { jwtConfigKey } from 'src/config/jwt.congig';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly jwtSecret: string;
+
   constructor(
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    const config = this.configService.get<AppJwtConfig>(jwtConfigKey);
+    this.jwtSecret = config!.secret;
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(isPublicKey, [
@@ -32,7 +39,7 @@ export class AuthGuard implements CanActivate {
     }
     try {
       request['user'] = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.jwtSecret,
+        secret: this.jwtSecret,
       });
       return true;
     } catch (e) {

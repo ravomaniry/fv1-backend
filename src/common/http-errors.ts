@@ -6,4 +6,5 @@ export enum ErrorCodesEnum {
   userExists = 'userExists',
   weakPassword = 'weakPassword',
   unknownError = 'unknownError',
+  invalidPayload = 'invalidPayload',
 }
