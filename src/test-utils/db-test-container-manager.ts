@@ -60,11 +60,6 @@ export class DbTestContainerManager {
     }
   }
 
-  async startAndRunMigrations() {
-    await this.start();
-    await this.runMigrations();
-  }
-
   /**
    * This can be used in afterEach to re-create the database.
    * It's faster than starting a new container
