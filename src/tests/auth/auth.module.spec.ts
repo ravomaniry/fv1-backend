@@ -118,5 +118,25 @@ describe('AuthModule', () => {
     );
   });
 
+  it('Register guest user', async () => {
+    await supertest(app.getHttpServer())
+      .post('/auth/register-guest')
+      .send({})
+      .expect(201)
+      .expect((res) =>
+        expect(res.body).toEqual({
+          user: expect.objectContaining({
+            id: expect.any(Number),
+            username: expect.any(String),
+          }),
+          tokens: {
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+          },
+        }),
+      );
+    await expect(dataSource.manager.find(UserEntity)).resolves.toHaveLength(1);
+  });
+
   afterAll(() => app.close());
 });

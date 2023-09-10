@@ -63,6 +63,11 @@ export class AuthService {
     return this.buildLoginResponse(user);
   }
 
+  async registerGuest() {
+    const dt = new Date().getTime().toString();
+    return this.register({ username: dt, password: dt + dt });
+  }
+
   async buildLoginResponse(user: UserEntity): Promise<LoginResponseDto> {
     return {
       user: {

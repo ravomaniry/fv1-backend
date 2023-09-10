@@ -17,4 +17,9 @@ export class AuthController {
   async register(@Body() dto: RegisterRequestDto) {
     return this.service.register(dto);
   }
+
+  @Post('/register-guest')
+  async registerGuest() {
+    return this.service.registerGuest();
+  }
 }
