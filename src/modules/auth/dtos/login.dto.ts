@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity } from '../../user/entities/user.entity';
-import { UserTokens } from '../types/user-tokens.interface';
+import { UserTokens } from './user-tokens.dto';
 
 export class LoginRequestDto {
   @ApiProperty({ required: true })

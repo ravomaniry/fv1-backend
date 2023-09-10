@@ -12,6 +12,8 @@ import { ErrorCodesEnum } from '../../../common/http-errors';
 import { RegisterRequestDto } from '../dtos/register.dto';
 import { TokenService } from './token.service';
 import { DataSource } from 'typeorm';
+import { RefreshTokenEntity } from '../entities/refresh-token.entity';
+import { UserTokens } from '../dtos/user-tokens.dto';
 
 @Injectable()
 export class AuthService {
@@ -66,6 +68,21 @@ export class AuthService {
   async registerGuest() {
     const dt = new Date().getTime().toString();
     return this.register({ username: dt, password: dt + dt });
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<UserTokens> {
+    const accessToken =
+      await this.tokenService.refreshAccessToken(refreshToken);
+    return {
+      accessToken: accessToken,
+      refreshToken,
+    };
+  }
+
+  async logOut(userId: number) {
+    await this.dataSource.manager.transaction((em) =>
+      em.delete(RefreshTokenEntity, { userId: userId }),
+    );
   }
 
   async buildLoginResponse(user: UserEntity): Promise<LoginResponseDto> {
