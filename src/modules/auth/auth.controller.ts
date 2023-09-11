@@ -1,23 +1,48 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import * as Joi from 'joi';
 import { LoginRequestDto } from './dtos/login.dto';
 import { RegisterRequestDto } from './dtos/register.dto';
 import { AuthService } from './services/auth.service';
 import { RefreshTokenRequestDto } from './dtos/refresh-token.dto';
 import { GetUserId, Public } from './auth.annotations';
+import { JoiValidationPipe } from '../../pipes/joi-validation.pipe';
+import { ControllerBase } from '../../common/controller.base';
 
+@ApiTags('Auth')
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly service: AuthService) {}
+export class AuthController extends ControllerBase {
+  constructor(private readonly service: AuthService) {
+    super();
+  }
 
+  @Post('login')
   @Public()
   @HttpCode(200)
-  @Post('login')
+  @UsePipes(
+    new JoiValidationPipe(
+      'body',
+      Joi.object({
+        username: Joi.string().required(),
+        password: Joi.string().required(),
+      }).required(),
+    ),
+  )
   async login(@Body() dto: LoginRequestDto) {
     return this.service.login(dto);
   }
 
-  @Public()
   @Post('register')
+  @Public()
+  @UsePipes(
+    new JoiValidationPipe(
+      'body',
+      Joi.object({
+        username: Joi.string().required(),
+        password: Joi.string().required(),
+      }).required(),
+    ),
+  )
   async register(@Body() dto: RegisterRequestDto) {
     return this.service.register(dto);
   }
@@ -30,6 +55,14 @@ export class AuthController {
 
   @Public()
   @Post('refresh-token')
+  @UsePipes(
+    new JoiValidationPipe(
+      'body',
+      Joi.object({
+        token: Joi.string().required(),
+      }),
+    ),
+  )
   async refreshToken(@Body() body: RefreshTokenRequestDto) {
     return this.service.refreshAccessToken(body.token);
   }

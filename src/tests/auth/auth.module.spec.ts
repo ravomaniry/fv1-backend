@@ -7,12 +7,10 @@ import { useTcManagerFixture } from '../../test-utils/db-fixture';
 import { INestApplication } from '@nestjs/common';
 import { ErrorCodesEnum } from '../../common/http-errors';
 import { RefreshTokenEntity } from '../../modules/auth/entities/refresh-token.entity';
-import { ConfigService } from '../../modules/config/config.service';
-import { ConfigModule } from '../../modules/config/config.module';
 import { UserTokens } from '../../modules/auth/dtos/user-tokens.dto';
 import { JwtService } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from '../../modules/auth/auth.guard';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { jwtConfigKey } from '../../config/jwt.congig';
 
 describe('AuthModule', () => {
   const tcManger = useTcManagerFixture();
@@ -26,11 +24,14 @@ describe('AuthModule', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [tcManger.createTypeOrmModule(), AuthModule, ConfigModule],
-      providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        tcManger.createTypeOrmModule(),
+        AuthModule,
+      ],
     })
       .overrideProvider(ConfigService)
-      .useValue({ jwtSecret: 'SECRET' })
+      .useValue(new Map([[jwtConfigKey, { secret: 'SECRET' }]]))
       .compile();
     dataSource = moduleRef.get(DataSource);
     jwtService = moduleRef.get(JwtService);
@@ -41,6 +42,18 @@ describe('AuthModule', () => {
 
   describe('/login', () => {
     it.each([
+      {
+        payload: {},
+        responseCode: 400,
+        responseBody: { code: ErrorCodesEnum.invalidPayload },
+        refreshTokensInDb: 0,
+      },
+      {
+        payload: { username: '', password: '' },
+        responseCode: 400,
+        responseBody: { code: ErrorCodesEnum.invalidPayload },
+        refreshTokensInDb: 0,
+      },
       {
         payload: { username: 'user1', password: originalPw },
         responseCode: 401,
@@ -93,6 +106,13 @@ describe('AuthModule', () => {
 
   describe('/register', () => {
     it.each([
+      {
+        payload: { username: '', password: 'longPassword' },
+        responseCode: 400,
+        responseBody: { code: ErrorCodesEnum.invalidPayload },
+        usersInDb: [expect.objectContaining({ username: 'existingUser' })],
+        refreshTokensInDb: 0,
+      },
       {
         payload: { username: 'existingUser', password: 'longPassword' },
         responseCode: 400,
@@ -215,6 +235,8 @@ describe('AuthModule', () => {
       .post('/auth/refresh-token')
       .send({ token: jwtService.sign({}, { secret: 'Wrong secret' }) })
       .expect(401);
+    // Fails if payload is invalid
+    await supertest(server).post('/auth/refresh-token').send({}).expect(400);
     // Succeed when token is found
     await supertest(server)
       .post('/auth/refresh-token')

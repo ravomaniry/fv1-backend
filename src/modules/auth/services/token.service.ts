@@ -5,15 +5,21 @@ import { JwtService } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
 import { RefreshTokenEntity } from '../entities/refresh-token.entity';
 import { ErrorCodesEnum } from '../../../common/http-errors';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService } from '@nestjs/config';
+import { jwtConfigKey } from '../../../config/jwt.congig';
+import { AppJwtConfig } from '../../../config/jwt-config.interface';
 
 @Injectable()
 export class TokenService {
+  private readonly jwtSecret: string;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.jwtSecret = this.configService.get<AppJwtConfig>(jwtConfigKey)!.secret;
+  }
 
   async generate(user: UserEntity): Promise<UserTokens> {
     const accessToken = await this.generateAccessToken(user);
@@ -39,7 +45,7 @@ export class TokenService {
   private async generateAnsStoreRefreshToken(userId: number) {
     const id = await this.jwtService.signAsync(
       { sub: userId, issuedAt: new Date().getTime() },
-      { secret: this.configService.jwtSecret },
+      { secret: this.jwtSecret },
     );
     await this.dataSource.manager.transaction((em) =>
       em.insert(
@@ -56,9 +62,7 @@ export class TokenService {
   private generateAccessToken(user: UserEntity) {
     return this.jwtService.signAsync(
       { sub: user.id },
-      {
-        secret: this.configService.jwtSecret,
-      },
+      { secret: this.jwtSecret },
     );
   }
 }
