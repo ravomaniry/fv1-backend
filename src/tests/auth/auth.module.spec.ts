@@ -9,8 +9,6 @@ import { ErrorCodesEnum } from '../../common/http-errors';
 import { RefreshTokenEntity } from '../../modules/auth/entities/refresh-token.entity';
 import { UserTokens } from '../../modules/auth/dtos/user-tokens.dto';
 import { JwtService } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from '../../modules/auth/auth.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigKey } from '../../config/jwt.congig';
 
@@ -31,7 +29,6 @@ describe('AuthModule', () => {
         tcManger.createTypeOrmModule(),
         AuthModule,
       ],
-      providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
     })
       .overrideProvider(ConfigService)
       .useValue(new Map([[jwtConfigKey, { secret: 'SECRET' }]]))

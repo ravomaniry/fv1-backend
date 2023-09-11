@@ -16,9 +16,11 @@ export const dbConfig = registerAs<DataSourceOptions>(
     database: process.env.MYSQL_DATABASE,
     port: Number(process.env.DATABASE_PORT!),
     synchronize: false,
-    migrationsRun: false,
     logging: false,
     namingStrategy: new SnakeNamingStrategy(),
+    // Run migration as long as the DB is in Docker
+    migrationsRun: true,
+    migrations: [join(__dirname, '../migrations/*.{js,ts}')],
     // server uses compiled files with js extension
     // Tests use ts files
     entities: [join(__dirname, '../modules/*/entities/*.entity.{js,ts}')],

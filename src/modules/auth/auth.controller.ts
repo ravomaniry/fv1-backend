@@ -1,15 +1,20 @@
 import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import * as Joi from 'joi';
 import { LoginRequestDto } from './dtos/login.dto';
 import { RegisterRequestDto } from './dtos/register.dto';
 import { AuthService } from './services/auth.service';
 import { RefreshTokenRequestDto } from './dtos/refresh-token.dto';
 import { GetUserId, Public } from './auth.annotations';
 import { JoiValidationPipe } from '../../pipes/joi-validation.pipe';
-import * as Joi from 'joi';
+import { ControllerBase } from '../../common/controller.base';
 
+@ApiTags('Auth')
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly service: AuthService) {}
+export class AuthController extends ControllerBase {
+  constructor(private readonly service: AuthService) {
+    super();
+  }
 
   @Post('login')
   @Public()

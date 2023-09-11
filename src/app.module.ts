@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { SanityCheckModule } from './modules/sanity-check/sanity-check.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './modules/auth/auth.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfig } from './config/jwt.congig';
 import { dbConfig, dbConfigKey } from './config/database.config';
@@ -34,6 +32,5 @@ import { DataSourceOptions } from 'typeorm';
     UserModule,
     AuthModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}
