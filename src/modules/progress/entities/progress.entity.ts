@@ -1,11 +1,5 @@
 import { TeachingEntity } from 'src/modules/teaching/entities/teaching.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ProgressScore } from '../types/score';
 import { UserEntity } from 'src/modules/user/entities/user.entity';
 
@@ -15,11 +9,9 @@ export class ProgressEntity {
   id: number;
 
   @ManyToOne(() => TeachingEntity, (teaching) => teaching.progresses)
-  @JoinColumn({ name: 'teaching_id' })
   teaching: TeachingEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.progresses)
-  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @Column('simple-json')

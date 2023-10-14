@@ -81,7 +81,7 @@ export class AuthService {
 
   async logOut(userId: number) {
     await this.dataSource.manager.transaction((em) =>
-      em.delete(RefreshTokenEntity, { userId: userId }),
+      em.delete(RefreshTokenEntity, { user: { id: userId } }),
     );
   }
 

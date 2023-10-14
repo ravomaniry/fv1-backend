@@ -225,8 +225,9 @@ describe('AuthModule', () => {
     await expect(
       manager.find(RefreshTokenEntity, {
         where: { id: tokens!.refreshToken },
+        loadRelationIds: { disableMixedMap: true, relations: ['user'] },
       }),
-    ).resolves.toEqual([{ id: tokens!.refreshToken, userId: 1 }]);
+    ).resolves.toEqual([{ id: tokens!.refreshToken, user: { id: 1 } }]);
     // Log out fails when no token is provided
     await supertest(server).post('/auth/logout').expect(401);
     /// Refresh token
@@ -253,8 +254,9 @@ describe('AuthModule', () => {
     await expect(
       manager.find(RefreshTokenEntity, {
         where: { id: tokens!.refreshToken },
+        loadRelationIds: { disableMixedMap: true, relations: ['user'] },
       }),
-    ).resolves.toEqual([{ id: tokens!.refreshToken, userId: user!.id }]);
+    ).resolves.toEqual([{ id: tokens!.refreshToken, user: { id: user!.id } }]);
     /// Log out
     await dataSource.transaction(async (em) => {
       await em.save(

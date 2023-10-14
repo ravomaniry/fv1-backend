@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity('refresh_tokens')
@@ -8,7 +8,4 @@ export class RefreshTokenEntity {
 
   @ManyToOne(() => UserEntity)
   user: UserEntity;
-
-  @Column()
-  userId: number;
 }
