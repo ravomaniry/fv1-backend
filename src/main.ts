@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.setGlobalPrefix('api');
   const swaggerDoc = SwaggerModule.createDocument(
     app,
     new DocumentBuilder().addBearerAuth().setTitle('Fv1').build(),
