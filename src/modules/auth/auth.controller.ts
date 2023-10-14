@@ -7,14 +7,11 @@ import { AuthService } from './services/auth.service';
 import { RefreshTokenRequestDto } from './dtos/refresh-token.dto';
 import { GetUserId, Public } from './auth.annotations';
 import { JoiValidationPipe } from '../../pipes/joi-validation.pipe';
-import { ControllerBase } from '../../common/controller.base';
 
 @ApiTags('Auth')
 @Controller('auth')
-export class AuthController extends ControllerBase {
-  constructor(private readonly service: AuthService) {
-    super();
-  }
+export class AuthController {
+  constructor(private readonly service: AuthService) {}
 
   @Post('login')
   @Public()

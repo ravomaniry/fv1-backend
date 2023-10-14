@@ -5,6 +5,8 @@ import { PasswordService } from './services/password.service';
 import { TokenService } from './services/token.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
@@ -14,7 +16,12 @@ import { JwtModule } from '@nestjs/jwt';
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [AuthService, PasswordService, TokenService],
+  providers: [
+    AuthService,
+    PasswordService,
+    TokenService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

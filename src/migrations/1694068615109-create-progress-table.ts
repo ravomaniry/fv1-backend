@@ -10,9 +10,14 @@ export class CreateProgressTable1694068615109 implements MigrationInterface {
             user_id int NOT NULL,
 
             PRIMARY KEY (id),
+
+            CONSTRAINT unqProgressTeachingIdUserId
+              UNIQUE (teaching_id, user_id),
+
             CONSTRAINT fkProgressTeaching
                 FOREIGN KEY (teaching_id)
                     REFERENCES teachings (id),
+
             CONSTRAINT fkProgressUser
                 FOREIGN KEY (user_id)
                     REFERENCES users (id)

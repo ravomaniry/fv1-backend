@@ -8,6 +8,7 @@ import { dbConfig, dbConfigKey } from './config/database.config';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
+import { ProgressModule } from './modules/progress/progress.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { DataSourceOptions } from 'typeorm';
     SanityCheckModule,
     UserModule,
     AuthModule,
+    ProgressModule,
   ],
 })
 export class AppModule {}

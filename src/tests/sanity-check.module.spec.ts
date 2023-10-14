@@ -1,22 +1,16 @@
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import { SanityCheckModule } from '../modules/sanity-check/sanity-check.module';
-import * as supertest from 'supertest';
+import { useSupertestFixture } from 'src/test-utils/supertestFixture';
+import { TestingModuleRef } from 'src/test-utils/testing-module-ref.class';
 
 describe('SanityCheckModule', () => {
-  let app: INestApplication;
+  const moduleRef = new TestingModuleRef();
+  const fixture = useSupertestFixture(moduleRef);
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      imports: [SanityCheckModule],
-    }).compile();
-    app = module.createNestApplication();
-    await app.init();
+    await moduleRef.create({ imports: [SanityCheckModule] });
   });
 
   it('Responds 200', async () => {
-    await supertest(app.getHttpServer()).get('/sanity-check').expect(200);
+    await fixture.supertest().get('/sanity-check').expect(200);
   });
-
-  afterAll(() => app.close());
 });
