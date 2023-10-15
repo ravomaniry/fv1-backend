@@ -9,6 +9,7 @@ import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { ProgressModule } from './modules/progress/progress.module';
+import { TeachingModule } from './modules/teaching/teaching.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ProgressModule } from './modules/progress/progress.module';
     UserModule,
     AuthModule,
     ProgressModule,
+    TeachingModule,
   ],
 })
 export class AppModule {}
