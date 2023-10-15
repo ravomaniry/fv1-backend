@@ -1,13 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import * as supertest from 'supertest';
-import { TestingModuleRef } from './testing-module-ref.class';
+import { TestingModuleFactory } from './testingModuleFactory.class';
 
-export function useSupertestFixture(moduleRef: TestingModuleRef) {
+export function useSupertestFixture(moduleFactory: TestingModuleFactory) {
   const supertest = new SupertestFixture();
 
   // BeforeEach runs after the module is compiled in beforeAll
-  beforeEach(() => supertest.onBeforeEach(moduleRef.instance));
+  beforeEach(() => supertest.onBeforeEach(moduleFactory.instance));
 
   afterAll(() => supertest.close());
 

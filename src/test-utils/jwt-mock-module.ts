@@ -3,9 +3,9 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { AppJwtConfig } from 'src/config/jwt-config.interface';
 import { jwtConfigKey } from 'src/config/jwt.congig';
-import { TestingModuleRef } from './testing-module-ref.class';
+import { TestingModuleFactory } from './testingModuleFactory.class';
 
-export function useJwtMockFixture(moduleRef: TestingModuleRef) {
+export function useJwtMockFixture(moduleRef: TestingModuleFactory) {
   const jwtModule = new JwtMockModule();
 
   beforeEach(() => jwtModule.init(moduleRef.instance));

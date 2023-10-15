@@ -1,9 +1,9 @@
 import { SanityCheckModule } from '../modules/sanity-check/sanity-check.module';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
-import { TestingModuleRef } from 'src/test-utils/testing-module-ref.class';
+import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
 
 describe('SanityCheckModule', () => {
-  const moduleRef = new TestingModuleRef();
+  const moduleRef = new TestingModuleFactory();
   const fixture = useSupertestFixture(moduleRef);
 
   beforeAll(async () => {
