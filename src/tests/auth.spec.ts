@@ -1,13 +1,13 @@
 import { DataSource } from 'typeorm';
-import { AuthModule } from '../../modules/auth/auth.module';
-import { UserEntity } from '../../modules/user/entities/user.entity';
-import { useTcManagerFixture } from '../../test-utils/db-fixture';
-import { ErrorCodesEnum } from '../../common/http-errors';
-import { RefreshTokenEntity } from '../../modules/auth/entities/refresh-token.entity';
-import { UserTokens } from '../../modules/auth/dtos/user-tokens.dto';
+import { AuthModule } from '../modules/auth/auth.module';
+import { UserEntity } from '../modules/user/entities/user.entity';
+import { useTcManagerFixture } from '../test-utils/db-fixture';
+import { ErrorCodesEnum } from '../common/http-errors';
+import { RefreshTokenEntity } from '../modules/auth/entities/refresh-token.entity';
+import { UserTokens } from '../modules/auth/dtos/user-tokens.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfigKey } from '../../config/jwt.congig';
+import { jwtConfigKey } from '../config/jwt.congig';
 import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
 

@@ -1,6 +1,7 @@
 import {
   createParamDecorator,
   ExecutionContext,
+  InternalServerErrorException,
   SetMetadata,
 } from '@nestjs/common';
 
@@ -9,6 +10,10 @@ export const Public = () => SetMetadata(isPublicKey, true);
 
 export const GetUserId = createParamDecorator(
   async (_: string, ctx: ExecutionContext) => {
-    return ctx.switchToHttp().getRequest().user?.sub;
+    const user = ctx.switchToHttp().getRequest().user;
+    if (!user) {
+      throw new InternalServerErrorException('Req.user is not defined');
+    }
+    return user.sub;
   },
 );
