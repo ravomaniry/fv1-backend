@@ -6,8 +6,7 @@ import { DataSource } from 'typeorm';
 import { RefreshTokenEntity } from '../entities/refresh-token.entity';
 import { ErrorCodesEnum } from '../../../common/http-errors';
 import { ConfigService } from '@nestjs/config';
-import { jwtConfigKey } from '../../../config/jwt.congig';
-import { AppJwtConfig } from '../../../config/jwt-config.interface';
+import { jwtConfigKey, AppJwtConfig } from '../../../config/jwt.config';
 
 @Injectable()
 export class TokenService {

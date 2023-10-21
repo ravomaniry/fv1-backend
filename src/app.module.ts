@@ -3,18 +3,20 @@ import { SanityCheckModule } from './modules/sanity-check/sanity-check.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfig } from './config/jwt.congig';
+import { jwtConfig } from './config/jwt.config';
 import { dbConfig, dbConfigKey } from './config/database.config';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { ProgressModule } from './modules/progress/progress.module';
 import { TeachingModule } from './modules/teaching/teaching.module';
+import { AudioModule } from './modules/audio/audio.module';
+import { storageConfig } from './config/storage.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [jwtConfig, dbConfig],
+      load: [jwtConfig, dbConfig, storageConfig],
       isGlobal: true,
       validationSchema: Joi.object({
         JWT_SECRET: Joi.string().required(),
@@ -23,6 +25,7 @@ import { TeachingModule } from './modules/teaching/teaching.module';
         MYSQL_USER: Joi.string().required(),
         MYSQL_PASSWORD: Joi.string().required(),
         MYSQL_DATABASE: Joi.string().required(),
+        AUDIO_BASE_URL: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -35,6 +38,7 @@ import { TeachingModule } from './modules/teaching/teaching.module';
     AuthModule,
     ProgressModule,
     TeachingModule,
+    AudioModule,
   ],
 })
 export class AppModule {}

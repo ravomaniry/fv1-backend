@@ -1,8 +1,7 @@
 import { ConfigModule, registerAs } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
-import { AppJwtConfig } from 'src/config/jwt-config.interface';
-import { jwtConfigKey } from 'src/config/jwt.congig';
+import { jwtConfigKey, AppJwtConfig } from 'src/config/jwt.config';
 import { TestingModuleFactory } from './testingModuleFactory.class';
 
 export function useJwtMockFixture(moduleRef: TestingModuleFactory) {
@@ -14,7 +13,7 @@ export function useJwtMockFixture(moduleRef: TestingModuleFactory) {
 }
 
 export class JwtMockModule {
-  private readonly secret = 'test';
+  static secret = 'test';
   private jwtService: JwtService;
 
   createModules() {
@@ -24,7 +23,7 @@ export class JwtMockModule {
         load: [
           registerAs(
             jwtConfigKey,
-            (): AppJwtConfig => ({ secret: this.secret }),
+            (): AppJwtConfig => ({ secret: JwtMockModule.secret }),
           ),
         ],
       }),
@@ -44,7 +43,7 @@ export class JwtMockModule {
       'Authorization',
       `Bearer ${this.jwtService.sign(
         { sub: userId },
-        { secret: this.secret },
+        { secret: JwtMockModule.secret },
       )}`,
     ];
   }

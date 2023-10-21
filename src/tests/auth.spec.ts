@@ -7,7 +7,7 @@ import { RefreshTokenEntity } from '../modules/auth/entities/refresh-token.entit
 import { UserTokens } from '../modules/auth/dtos/user-tokens.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfigKey } from '../config/jwt.congig';
+import { jwtConfigKey } from '../config/jwt.config';
 import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
 
