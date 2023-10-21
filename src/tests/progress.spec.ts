@@ -41,13 +41,13 @@ describe('ProgressController', () => {
           id: 1,
           title: 'T1',
           subtitle: 'ST1',
-          content: {},
+          chapters: [],
         }),
         em.create(TeachingEntity, {
           id: 2,
           title: 'T2',
           subtitle: 'ST2',
-          content: {},
+          chapters: [],
         }),
       ];
       await em.save(users);
@@ -94,12 +94,12 @@ describe('ProgressController', () => {
           {
             id: 1,
             scores: [{ correctAnswersPercentage: 0.1 }],
-            teaching: { id: 1, title: 'T1', subtitle: 'ST1', content: {} },
+            teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
           },
           {
             id: 2,
             scores: [{ correctAnswersPercentage: 0.2 }],
-            teaching: { id: 2, title: 'T2', subtitle: 'ST2', content: {} },
+            teaching: { id: 2, title: 'T2', subtitle: 'ST2', chapters: [] },
           },
         ],
       },
@@ -110,7 +110,7 @@ describe('ProgressController', () => {
           {
             id: 3,
             scores: [{ correctAnswersPercentage: 0.3 }],
-            teaching: { id: 1, title: 'T1', subtitle: 'ST1', content: {} },
+            teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
           },
         ],
       },
@@ -156,7 +156,7 @@ describe('ProgressController', () => {
         response: {
           id: 1,
           scores: [{ correctAnswersPercentage: 0.1 }],
-          teaching: { id: 1, title: 'T1', subtitle: 'ST1', content: {} },
+          teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
         },
         progresseAfterUpdate: [expect.objectContaining({ id: 1 })],
       },
@@ -168,7 +168,7 @@ describe('ProgressController', () => {
         response: {
           id: expect.any(Number),
           scores: [],
-          teaching: { id: 2, title: 'T2', subtitle: 'ST2', content: {} },
+          teaching: { id: 2, title: 'T2', subtitle: 'ST2', chapters: [] },
         },
         progresseAfterUpdate: [
           expect.objectContaining({ id: 1 }),

@@ -41,13 +41,13 @@ describe('TeachingModule', () => {
             id: 1,
             title: 'T1',
             subtitle: 'ST1',
-            content: {},
+            chapters: [],
           }),
           em.create(TeachingEntity, {
             id: 2,
             title: 'T2',
             subtitle: 'ST2',
-            content: {},
+            chapters: [],
           }),
         ];
         await em.save(teachings);
@@ -65,14 +65,14 @@ describe('TeachingModule', () => {
       {
         description: 'Returns one for user 1',
         userId: 1,
-        response: [{ id: 2, title: 'T2', subtitle: 'ST2', content: {} }],
+        response: [{ id: 2, title: 'T2', subtitle: 'ST2', chapters: [] }],
       },
       {
         description: 'Returns two for user 2',
         userId: 2,
         response: [
-          { id: 1, title: 'T1', subtitle: 'ST1', content: {} },
-          { id: 2, title: 'T2', subtitle: 'ST2', content: {} },
+          { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
+          { id: 2, title: 'T2', subtitle: 'ST2', chapters: [] },
         ],
       },
     ])('$description', async ({ userId, response }) => {

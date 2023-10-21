@@ -7,7 +7,7 @@ export class CreateTeachingTable1694066670374 implements MigrationInterface {
             id int NOT NULL AUTO_INCREMENT,
             title VARCHAR(255) NOT NULL,
             subtitle VARCHAR(255) NOT NULL,
-            content JSON NOT NULL,
+            chapters JSON NOT NULL,
             PRIMARY KEY (id)
         ) ENGINE=InnoDB`,
     );
