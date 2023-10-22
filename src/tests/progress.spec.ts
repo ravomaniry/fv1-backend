@@ -10,6 +10,7 @@ import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class'
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { ErrorCodesEnum } from 'src/common/http-errors';
 import { SaveProgressReqDto } from 'src/modules/progress/dtos/savePrgress.dto';
+import { LoggerModule } from 'nestjs-pino';
 
 describe('ProgressController', () => {
   const moduleFactory = new TestingModuleFactory();
@@ -21,6 +22,7 @@ describe('ProgressController', () => {
   beforeAll(async () => {
     const module = await moduleFactory.create({
       imports: [
+        LoggerModule.forRoot(),
         tcManager.createTypeOrmModule(),
         ...jwtMock.createModules(),
         ProgressModule,
@@ -218,7 +220,7 @@ describe('ProgressController', () => {
       await dataSource.transaction(async (em) => {
         await em.save(
           em.create(ProgressEntity, {
-            id: 1,
+            id: 10,
             scores: [],
             teaching: { id: 1 },
             user: { id: 1 },
@@ -230,7 +232,7 @@ describe('ProgressController', () => {
     it.each([
       {
         description: 'Invalid request body',
-        progressId: 1,
+        progressId: 100,
         userId: 1,
         body: <Partial<SaveProgressReqDto>>{ scores: [] },
         responseCode: 400,
@@ -238,7 +240,7 @@ describe('ProgressController', () => {
       },
       {
         description: 'Invalid request body',
-        progressId: 1,
+        progressId: 10,
         userId: 1,
         body: <Partial<SaveProgressReqDto>>{ clientTimestamp: 1000 },
         responseCode: 400,
@@ -246,18 +248,20 @@ describe('ProgressController', () => {
       },
       {
         description: 'Progress does not belong to current user',
-        progressId: 1,
+        progressId: 10,
         userId: 2,
         body: <SaveProgressReqDto>{
           scores: [{ correctAnswersPercentage: 0.5 }],
           clientTimestamp: 1000,
         },
         responseCode: 400,
-        progressesAfterUpdate: [expect.objectContaining({ id: 1, scores: [] })],
+        progressesAfterUpdate: [
+          expect.objectContaining({ id: 10, scores: [] }),
+        ],
       },
       {
         description: 'Updates the progress with the data received from API',
-        progressId: 1,
+        progressId: 10,
         userId: 1,
         body: <SaveProgressReqDto>{
           clientTimestamp: 1000,
@@ -266,7 +270,7 @@ describe('ProgressController', () => {
         responseCode: 200,
         progressesAfterUpdate: [
           expect.objectContaining({
-            id: 1,
+            id: 10,
             clientTimestamp: 1000,
             scores: [{ correctAnswersPercentage: 0.5 }],
           }),
@@ -299,7 +303,7 @@ describe('ProgressController', () => {
       await dataSource.transaction(async (em) => {
         await em.save(
           em.create(ProgressEntity, {
-            id: 1,
+            id: 10,
             scores: [],
             teaching: { id: 1 },
             user: { id: 1 },
@@ -312,18 +316,26 @@ describe('ProgressController', () => {
     it.each([
       {
         description: 'Progress does not belong to current user',
-        progressId: 1,
+        progressId: 10,
         userId: 2,
         body: <SaveProgressReqDto>{
           scores: [{ correctAnswersPercentage: 0.5 }],
           clientTimestamp: 1000,
         },
-        responseCode: 400,
-        progressesAfterUpdate: [expect.objectContaining({ id: 1, scores: [] })],
+        responseCode: 200,
+        progressesAfterUpdate: [
+          expect.objectContaining({ id: 10, scores: [] }),
+          expect.objectContaining({
+            scores: [{ correctAnswersPercentage: 0.5 }],
+            clientTimestamp: 1000,
+            user: { id: 2 },
+            teaching: { id: 1 },
+          }),
+        ],
       },
       {
         description: 'Version from client is older',
-        progressId: 1,
+        progressId: 10,
         userId: 1,
         body: <SaveProgressReqDto>{
           scores: [{ correctAnswersPercentage: 0.5 }],
@@ -331,12 +343,16 @@ describe('ProgressController', () => {
         },
         responseCode: 200,
         progressesAfterUpdate: [
-          expect.objectContaining({ id: 1, scores: [], clientTimestamp: 1000 }),
+          expect.objectContaining({
+            id: 10,
+            scores: [],
+            clientTimestamp: 1000,
+          }),
         ],
       },
       {
         description: 'Updates the progress with the data received from API',
-        progressId: 1,
+        progressId: 10,
         userId: 1,
         body: <SaveProgressReqDto>{
           clientTimestamp: 1001,
@@ -345,7 +361,7 @@ describe('ProgressController', () => {
         responseCode: 200,
         progressesAfterUpdate: [
           expect.objectContaining({
-            id: 1,
+            id: 10,
             clientTimestamp: 1001,
             scores: [{ correctAnswersPercentage: 0.5 }],
           }),
@@ -366,9 +382,14 @@ describe('ProgressController', () => {
           .set(...jwtMock.createAuthHeader(userId))
           .send(body)
           .expect(responseCode);
-        await expect(dataSource.manager.find(ProgressEntity)).resolves.toEqual(
-          progressesAfterUpdate,
-        );
+        await expect(
+          dataSource.manager.find(ProgressEntity, {
+            loadRelationIds: {
+              disableMixedMap: true,
+              relations: ['user', 'teaching'],
+            },
+          }),
+        ).resolves.toEqual(progressesAfterUpdate);
       },
     );
   });
