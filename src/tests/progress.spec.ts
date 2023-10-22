@@ -3,15 +3,13 @@ import { DataSource } from 'typeorm';
 import { ProgressModule } from 'src/modules/progress/progress.module';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
 import { TeachingEntity } from 'src/modules/teaching/entities/teaching.entity';
-import {
-  ProgressEntity,
-  ProgressScore,
-} from 'src/modules/progress/entities/progress.entity';
+import { ProgressEntity } from 'src/modules/progress/entities/progress.entity';
 import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { useJwtMockFixture } from 'src/test-utils/jwt-mock-module';
 import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { ErrorCodesEnum } from 'src/common/http-errors';
+import { SaveProgressReqDto } from 'src/modules/progress/dtos/savePrgress.dto';
 
 describe('ProgressController', () => {
   const moduleFactory = new TestingModuleFactory();
@@ -98,11 +96,13 @@ describe('ProgressController', () => {
             id: 1,
             scores: [{ correctAnswersPercentage: 0.1 }],
             teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
+            clientTimestamp: 0,
           },
           {
             id: 2,
             scores: [{ correctAnswersPercentage: 0.2 }],
             teaching: { id: 2, title: 'T2', subtitle: 'ST2', chapters: [] },
+            clientTimestamp: 0,
           },
         ],
       },
@@ -114,6 +114,7 @@ describe('ProgressController', () => {
             id: 3,
             scores: [{ correctAnswersPercentage: 0.3 }],
             teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
+            clientTimestamp: 0,
           },
         ],
       },
@@ -123,7 +124,7 @@ describe('ProgressController', () => {
         .get('/progress')
         .set(...jwtMock.createAuthHeader(userId))
         .expect(200)
-        .expect(response);
+        .expect((res) => expect(res.body).toEqual(response));
     });
   });
 
@@ -159,6 +160,7 @@ describe('ProgressController', () => {
         response: {
           id: 1,
           scores: [{ correctAnswersPercentage: 0.1 }],
+          clientTimestamp: 0,
           teaching: { id: 1, title: 'T1', subtitle: 'ST1', chapters: [] },
         },
         progresseAfterUpdate: [expect.objectContaining({ id: 1 })],
@@ -171,12 +173,14 @@ describe('ProgressController', () => {
         response: {
           id: expect.any(Number),
           scores: [],
+          clientTimestamp: 0,
           teaching: { id: 2, title: 'T2', subtitle: 'ST2', chapters: [] },
         },
         progresseAfterUpdate: [
           expect.objectContaining({ id: 1 }),
           expect.objectContaining({
             user: { id: 1 },
+            clientTimestamp: 0,
             teaching: { id: 2 },
           }),
         ],
@@ -228,7 +232,10 @@ describe('ProgressController', () => {
         description: 'Progress does not belong to current user',
         progressId: 1,
         userId: 2,
-        body: { scores: <ProgressScore[]>[{ correctAnswersPercentage: 0.5 }] },
+        body: <SaveProgressReqDto>{
+          scores: [{ correctAnswersPercentage: 0.5 }],
+          clientTimestamp: 1000,
+        },
         responseCode: 400,
         progressesAfterUpdate: [expect.objectContaining({ id: 1, scores: [] })],
       },
@@ -236,11 +243,15 @@ describe('ProgressController', () => {
         description: 'Updates the progress with the data received from API',
         progressId: 1,
         userId: 1,
-        body: { scores: <ProgressScore[]>[{ correctAnswersPercentage: 0.5 }] },
+        body: <SaveProgressReqDto>{
+          clientTimestamp: 1000,
+          scores: [{ correctAnswersPercentage: 0.5 }],
+        },
         responseCode: 200,
         progressesAfterUpdate: [
           expect.objectContaining({
             id: 1,
+            clientTimestamp: 1000,
             scores: [{ correctAnswersPercentage: 0.5 }],
           }),
         ],
@@ -257,6 +268,85 @@ describe('ProgressController', () => {
         await stFixture
           .supertest()
           .put(`/progress/save/${progressId}`)
+          .set(...jwtMock.createAuthHeader(userId))
+          .send(body)
+          .expect(responseCode);
+        await expect(dataSource.manager.find(ProgressEntity)).resolves.toEqual(
+          progressesAfterUpdate,
+        );
+      },
+    );
+  });
+
+  describe('/progress/sync', () => {
+    beforeEach(async () => {
+      await dataSource.transaction(async (em) => {
+        await em.save(
+          em.create(ProgressEntity, {
+            id: 1,
+            scores: [],
+            teaching: { id: 1 },
+            user: { id: 1 },
+            clientTimestamp: 1000,
+          }),
+        );
+      });
+    });
+
+    it.each([
+      {
+        description: 'Progress does not belong to current user',
+        progressId: 1,
+        userId: 2,
+        body: <SaveProgressReqDto>{
+          scores: [{ correctAnswersPercentage: 0.5 }],
+          clientTimestamp: 1000,
+        },
+        responseCode: 400,
+        progressesAfterUpdate: [expect.objectContaining({ id: 1, scores: [] })],
+      },
+      {
+        description: 'Version from client is older',
+        progressId: 1,
+        userId: 1,
+        body: <SaveProgressReqDto>{
+          scores: [{ correctAnswersPercentage: 0.5 }],
+          clientTimestamp: 900,
+        },
+        responseCode: 200,
+        progressesAfterUpdate: [
+          expect.objectContaining({ id: 1, scores: [], clientTimestamp: 1000 }),
+        ],
+      },
+      {
+        description: 'Updates the progress with the data received from API',
+        progressId: 1,
+        userId: 1,
+        body: <SaveProgressReqDto>{
+          clientTimestamp: 1001,
+          scores: [{ correctAnswersPercentage: 0.5 }],
+        },
+        responseCode: 200,
+        progressesAfterUpdate: [
+          expect.objectContaining({
+            id: 1,
+            clientTimestamp: 1001,
+            scores: [{ correctAnswersPercentage: 0.5 }],
+          }),
+        ],
+      },
+    ])(
+      '$description',
+      async ({
+        userId,
+        progressId,
+        body,
+        responseCode,
+        progressesAfterUpdate,
+      }) => {
+        await stFixture
+          .supertest()
+          .put(`/progress/sync/${progressId}`)
           .set(...jwtMock.createAuthHeader(userId))
           .send(body)
           .expect(responseCode);

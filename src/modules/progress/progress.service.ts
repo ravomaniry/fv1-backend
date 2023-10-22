@@ -39,18 +39,39 @@ export class ProgressService {
     progress.scores = [];
     progress.teaching = teaching;
     progress.user = { id: userId } as UserEntity;
+    progress.clientTimestamp = 0;
     await this.dataSource.manager.save(progress);
     return { ...progress, user: undefined };
   }
 
-  async save(progressId: number, userId: number, body: SaveProgressReqDto) {
+  async save(progressId: number, userId: number, reqBody: SaveProgressReqDto) {
+    const progress = await this.getProgressForUser(progressId, userId);
+    await this.updateProgress(progress, reqBody);
+  }
+
+  async sync(progressId: number, userId: number, reqBody: SaveProgressReqDto) {
+    const progress = await this.getProgressForUser(progressId, userId);
+    if (progress.clientTimestamp < reqBody.clientTimestamp) {
+      await this.updateProgress(progress, reqBody);
+    }
+  }
+
+  private async getProgressForUser(progressId: number, userId: number) {
     const progress = await this.dataSource.manager.findOne(ProgressEntity, {
       where: { user: { id: userId }, id: progressId },
     });
     if (!progress) {
       throw new BadRequestException('Progress not found');
     }
-    progress.scores = body.scores;
+    return progress;
+  }
+
+  private async updateProgress(
+    progress: ProgressEntity,
+    reqBody: SaveProgressReqDto,
+  ) {
+    progress.scores = reqBody.scores;
+    progress.clientTimestamp = reqBody.clientTimestamp;
     await this.dataSource.manager.save(progress);
   }
 }

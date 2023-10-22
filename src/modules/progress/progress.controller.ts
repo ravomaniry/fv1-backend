@@ -43,4 +43,14 @@ export class ProgressController extends ControllerBase {
     await this.service.save(id, userId, body);
     return {};
   }
+
+  @Put('sync/:id')
+  async sync(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: SaveProgressReqDto,
+    @GetUserId() userId: number,
+  ) {
+    await this.service.sync(id, userId, body);
+    return {};
+  }
 }
