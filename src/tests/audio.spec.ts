@@ -56,6 +56,10 @@ describe('AudioModule', () => {
     await stFixture.supertest().get('/audio/url/key1.mp3').expect(401);
   });
 
+  it('Throws 400 if url is empty', async () => {
+    await stFixture.supertest().get('/audio/url/').expect(404);
+  });
+
   it.each([
     {
       description: 'Returns key without slash',
@@ -65,6 +69,11 @@ describe('AudioModule', () => {
     {
       description: 'Returns key with slash',
       url: '/audio/url/folder/abc.mp3',
+      response: 'https://x.com/audios/folder/abc.mp3',
+    },
+    {
+      description: 'Returns key with URI encoded slash',
+      url: '/audio/url/folder%2Fabc.mp3',
       response: 'https://x.com/audios/folder/abc.mp3',
     },
   ])('$description', async ({ url, response }) => {

@@ -12,9 +12,11 @@ import { ProgressModule } from './modules/progress/progress.module';
 import { TeachingModule } from './modules/teaching/teaching.module';
 import { AudioModule } from './modules/audio/audio.module';
 import { storageConfig } from './config/storage.config';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({ pinoHttp: { level: 'info' } }),
     ConfigModule.forRoot({
       load: [jwtConfig, dbConfig, storageConfig],
       isGlobal: true,
