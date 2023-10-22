@@ -3,7 +3,10 @@ import { DataSource } from 'typeorm';
 import { ProgressModule } from 'src/modules/progress/progress.module';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
 import { TeachingEntity } from 'src/modules/teaching/entities/teaching.entity';
-import { ProgressEntity } from 'src/modules/progress/entities/progress.entity';
+import {
+  ProgressEntity,
+  ProgressScore,
+} from 'src/modules/progress/entities/progress.entity';
 import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { useJwtMockFixture } from 'src/test-utils/jwt-mock-module';
 import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
@@ -202,6 +205,64 @@ describe('ProgressController', () => {
             },
           }),
         ).resolves.toEqual(progresseAfterUpdate);
+      },
+    );
+  });
+
+  describe('/progress/save', () => {
+    beforeEach(async () => {
+      await dataSource.transaction(async (em) => {
+        await em.save(
+          em.create(ProgressEntity, {
+            id: 1,
+            scores: [],
+            teaching: { id: 1 },
+            user: { id: 1 },
+          }),
+        );
+      });
+    });
+
+    it.each([
+      {
+        description: 'Progress does not belong to current user',
+        progressId: 1,
+        userId: 2,
+        body: { scores: <ProgressScore[]>[{ correctAnswersPercentage: 0.5 }] },
+        responseCode: 400,
+        progressesAfterUpdate: [expect.objectContaining({ id: 1, scores: [] })],
+      },
+      {
+        description: 'Updates the progress with the data received from API',
+        progressId: 1,
+        userId: 1,
+        body: { scores: <ProgressScore[]>[{ correctAnswersPercentage: 0.5 }] },
+        responseCode: 200,
+        progressesAfterUpdate: [
+          expect.objectContaining({
+            id: 1,
+            scores: [{ correctAnswersPercentage: 0.5 }],
+          }),
+        ],
+      },
+    ])(
+      '$description',
+      async ({
+        userId,
+        progressId,
+        body,
+        responseCode,
+        progressesAfterUpdate,
+      }) => {
+        await stFixture
+          .supertest()
+          .put(`/progress/save/${progressId}`)
+          .set(...jwtMock.createAuthHeader(userId))
+          .send(body)
+          .expect(responseCode);
+        await expect(dataSource.manager.find(ProgressEntity)).resolves.toEqual(
+          progressesAfterUpdate,
+        );
       },
     );
   });

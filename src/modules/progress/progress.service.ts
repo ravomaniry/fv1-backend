@@ -5,6 +5,7 @@ import { StartRequestDto } from './dtos/startTeaching.dto';
 import { TeachingEntity } from '../teaching/entities/teaching.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { ErrorCodesEnum } from 'src/common/http-errors';
+import { SaveProgressReqDto } from './dtos/savePrgress.dto';
 
 @Injectable()
 export class ProgressService {
@@ -40,5 +41,16 @@ export class ProgressService {
     progress.user = { id: userId } as UserEntity;
     await this.dataSource.manager.save(progress);
     return { ...progress, user: undefined };
+  }
+
+  async save(progressId: number, userId: number, body: SaveProgressReqDto) {
+    const progress = await this.dataSource.manager.findOne(ProgressEntity, {
+      where: { user: { id: userId }, id: progressId },
+    });
+    if (!progress) {
+      throw new BadRequestException('Progress not found');
+    }
+    progress.scores = body.scores;
+    await this.dataSource.manager.save(progress);
   }
 }
