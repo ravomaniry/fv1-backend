@@ -229,6 +229,22 @@ describe('ProgressController', () => {
 
     it.each([
       {
+        description: 'Invalid request body',
+        progressId: 1,
+        userId: 1,
+        body: <Partial<SaveProgressReqDto>>{ scores: [] },
+        responseCode: 400,
+        progressesAfterUpdate: [expect.objectContaining({})],
+      },
+      {
+        description: 'Invalid request body',
+        progressId: 1,
+        userId: 1,
+        body: <Partial<SaveProgressReqDto>>{ clientTimestamp: 1000 },
+        responseCode: 400,
+        progressesAfterUpdate: [expect.objectContaining({})],
+      },
+      {
         description: 'Progress does not belong to current user',
         progressId: 1,
         userId: 2,
