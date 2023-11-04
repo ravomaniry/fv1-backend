@@ -8,6 +8,7 @@ export class CreateProgressTable1694068615109 implements MigrationInterface {
             scores text NOT NULL NOT NULL,
             teaching_id int NOT NULL,
             user_id int NOT NULL,
+            client_timestamp int NOT NULL DEFAULT 0,
 
             PRIMARY KEY (id),
 

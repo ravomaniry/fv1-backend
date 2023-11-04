@@ -24,4 +24,8 @@ export class ProgressEntity {
   @ApiProperty({ type: ProgressScore, isArray: true })
   @Column('simple-json')
   scores: ProgressScore[];
+
+  @ApiProperty()
+  @Column()
+  clientTimestamp: number;
 }
