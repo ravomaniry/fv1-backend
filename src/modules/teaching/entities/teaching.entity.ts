@@ -7,7 +7,10 @@ export class TeachingSection {
   subtitle: string;
 
   @ApiProperty()
-  content: string;
+  verses: string;
+
+  @ApiProperty()
+  comment: string;
 
   @ApiProperty()
   audioId: string;
