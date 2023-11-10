@@ -27,7 +27,7 @@ export class TeachingQuestion {
   options: string[];
 
   @ApiProperty()
-  response: string;
+  responseIndex: number;
 }
 
 export class TeachingChapter {
