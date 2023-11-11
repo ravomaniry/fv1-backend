@@ -1,6 +1,10 @@
 FROM node:18-alpine
 
-COPY . .
+COPY package.json .
+COPY package-lock.json .
 RUN npm install
+
+COPY . .
 RUN npm run build
-CMD node dist/main.js
+RUN chmod +x scripts/start.sh
+CMD ["scripts/start.sh"]
