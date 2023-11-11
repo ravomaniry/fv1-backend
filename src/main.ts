@@ -10,7 +10,7 @@ async function bootstrap() {
     app,
     new DocumentBuilder().addBearerAuth().setTitle('Fv1').build(),
   );
-  SwaggerModule.setup('docs', app, swaggerDoc);
+  SwaggerModule.setup('api/docs', app, swaggerDoc);
   app.enableCors({ origin: '*' });
   app.useLogger(app.get(Logger));
   await app.listen(3000);
