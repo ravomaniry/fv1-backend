@@ -12,7 +12,8 @@ async function bootstrap() {
   );
   SwaggerModule.setup('api/docs', app, swaggerDoc);
   app.enableCors({ origin: '*' });
-  app.useLogger(app.get(Logger));
-  await app.listen(3000);
+  const logger = app.get(Logger);
+  app.useLogger(logger);
+  await app.listen(3000, () => logger.log('Application is started'));
 }
 bootstrap();
