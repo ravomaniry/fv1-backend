@@ -16,7 +16,14 @@ import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
-    LoggerModule.forRoot({ pinoHttp: { level: 'info' } }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        redact: {
+          paths: ['req.headers.authorization'],
+        },
+        level: 'info',
+      },
+    }),
     ConfigModule.forRoot({
       load: [jwtConfig, dbConfig, storageConfig],
       isGlobal: true,
