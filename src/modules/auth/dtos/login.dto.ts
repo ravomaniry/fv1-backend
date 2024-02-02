@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { UserEntity } from '../../user/entities/user.entity';
 import { UserTokens } from './user-tokens.dto';
 import { IsNotEmpty } from 'class-validator';
+
+export class UiUserModel extends PickType(UserEntity, ['id', 'username']) {}
 
 export class LoginRequestDto {
   @IsNotEmpty()
@@ -15,7 +17,7 @@ export class LoginRequestDto {
 
 export class LoginResponseDto {
   @ApiProperty()
-  user: Pick<UserEntity, 'id' | 'username'>;
+  user: UiUserModel;
 
   @ApiProperty()
   tokens: UserTokens;
