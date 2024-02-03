@@ -1,6 +1,6 @@
 import { Request as ExpressRequest } from 'express';
 import { Controller, Get, Request } from '@nestjs/common';
-import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AudioService } from './audio.service';
 import { ControllerBase } from 'src/common/controller.base';
 import { GetAudioUrlResp } from './dtos/audioUrl.dto';
@@ -15,6 +15,7 @@ export class AudioController extends ControllerBase {
   @Get('url/:key*')
   @ApiParam({ name: 'key', type: String })
   @ApiResponse({ type: GetAudioUrlResp })
+  @ApiOperation({ operationId: 'getUrl' })
   async getUrl(@Request() req: ExpressRequest) {
     const id = req.url.substring(req.url.indexOf(`/audio/url/`) + 11);
     return this.service.getUrl(decodeURIComponent(id));
