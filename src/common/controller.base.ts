@@ -1,4 +1,4 @@
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth } from '@nestjs/swagger';
 import {
   BadRequestException,
   UseGuards,
@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../modules/auth/auth.guard';
 import { ErrorCodesEnum } from './http-errors';
+import { BaseErrorResponseDto } from './error.dto';
 
+@ApiBadRequestResponse({ type: BaseErrorResponseDto })
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 @UsePipes(
