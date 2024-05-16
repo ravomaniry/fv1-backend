@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigKey } from '../config/jwt.config';
 import { TestingModuleFactory } from 'src/test-utils/testingModuleFactory.class';
 import { useSupertestFixture } from 'src/test-utils/supertestFixture';
+import { ConvertToNamedAccountReqDto } from 'src/modules/auth/dtos/convert-to-named-account.dto';
 
 describe('AuthModule', () => {
   const tcManger = useTcManagerFixture();
@@ -320,5 +321,66 @@ describe('AuthModule', () => {
       .set('Authorization', `Bearer ${refreshedTokens!.accessToken}`)
       .expect(201);
     await expect(manager.find(RefreshTokenEntity)).resolves.toHaveLength(1);
+  });
+
+  describe('Convert anonymous to named account', () => {
+    interface TestScenario {
+      description: string;
+      responseCode: number;
+      response: any;
+      reqBody: ConvertToNamedAccountReqDto;
+      updatedUsers: Partial<UserEntity>[];
+    }
+
+    beforeEach(async () => {
+      await dataSource.manager.insert(UserEntity, {
+        id: 1,
+        username: '1111',
+        hashedPassword: '',
+      });
+    });
+
+    it.each<TestScenario>([
+      {
+        description: 'Returns error if the password is weak',
+        reqBody: { username: 'user0', password: 'short' },
+        responseCode: 400,
+        response: { code: ErrorCodesEnum.weakPassword },
+        updatedUsers: [{ id: 1, username: '1111' }],
+      },
+      {
+        description: 'Update user and returns the new user tokens',
+        reqBody: { username: 'user0', password: originalPw },
+        responseCode: 200,
+        response: {
+          user: { id: 1, username: 'user0' },
+          tokens: {
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+          },
+        },
+        updatedUsers: [
+          {
+            id: 1,
+            username: 'user0',
+            hashedPassword: hashedPassword,
+          },
+        ],
+      },
+    ])('$description', async (scenario) => {
+      await stFixture
+        .supertest()
+        .put('/auth/convert-to-named-account')
+        .set(
+          'Authorization',
+          `Bearer ${jwtService.sign({ sub: 1 }, { secret: 'SECRET' })}`,
+        )
+        .send(scenario.reqBody)
+        .expect(scenario.responseCode)
+        .expect((res) => expect(res.body).toEqual(scenario.response));
+      await expect(dataSource.manager.find(UserEntity)).resolves.toMatchObject(
+        scenario.updatedUsers,
+      );
+    });
   });
 });

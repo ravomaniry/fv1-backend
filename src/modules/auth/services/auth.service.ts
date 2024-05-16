@@ -14,6 +14,7 @@ import { TokenService } from './token.service';
 import { DataSource } from 'typeorm';
 import { RefreshTokenEntity } from '../entities/refresh-token.entity';
 import { UserTokens } from '../dtos/user-tokens.dto';
+import { ConvertToNamedAccountReqDto } from '../dtos/convert-to-named-account.dto';
 
 @Injectable()
 export class AuthService {
@@ -43,10 +44,14 @@ export class AuthService {
     return this.buildLoginResponse(user);
   }
 
-  async register(body: RegisterRequestDto): Promise<LoginResponseDto> {
-    if (this.passwordService.passwordIsWeak(body.password)) {
+  private checkPasswordStrength(password: string) {
+    if (this.passwordService.passwordIsWeak(password)) {
       throw new BadRequestException({ code: ErrorCodesEnum.weakPassword });
     }
+  }
+
+  async register(body: RegisterRequestDto): Promise<LoginResponseDto> {
+    this.checkPasswordStrength(body.password);
     const user = await this.userService.insertOrFail(
       this.dataSource.manager.create(UserEntity, {
         username: body.username,
@@ -93,5 +98,27 @@ export class AuthService {
       },
       tokens: await this.tokenService.generate(user),
     };
+  }
+
+  async convertToNamedAccount(
+    userId: number,
+    reqDto: ConvertToNamedAccountReqDto,
+  ) {
+    this.checkPasswordStrength(reqDto.password);
+    await this.dataSource.manager.update(
+      UserEntity,
+      { id: userId },
+      {
+        username: reqDto.username,
+        hashedPassword: this.passwordService.hashPassword(
+          reqDto.username,
+          reqDto.password,
+        ),
+      },
+    );
+    const updatedUser = await this.dataSource.manager.findOne(UserEntity, {
+      where: { id: userId },
+    });
+    return this.buildLoginResponse(updatedUser!);
   }
 }

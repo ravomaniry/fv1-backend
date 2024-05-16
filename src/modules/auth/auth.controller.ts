@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginRequestDto, LoginResponseDto } from './dtos/login.dto';
 import { RegisterRequestDto } from './dtos/register.dto';
@@ -7,6 +7,7 @@ import { RefreshTokenRequestDto } from './dtos/refresh-token.dto';
 import { GetUserId, Public } from './auth.annotations';
 import { ControllerBase } from 'src/common/controller.base';
 import { UserTokens } from './dtos/user-tokens.dto';
+import { ConvertToNamedAccountReqDto } from './dtos/convert-to-named-account.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -53,5 +54,14 @@ export class AuthController extends ControllerBase {
   async logout(@GetUserId() userId: number) {
     await this.service.logOut(userId);
     return {};
+  }
+
+  @Put('convert-to-named-account')
+  @ApiOperation({ operationId: 'convertToNamedAccount' })
+  async convertToNamedAccount(
+    @GetUserId() userId: number,
+    @Body() body: ConvertToNamedAccountReqDto,
+  ) {
+    return this.service.convertToNamedAccount(userId, body);
   }
 }

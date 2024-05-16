@@ -84,4 +84,43 @@ describe('TeachingModule', () => {
         .expect(response);
     });
   });
+
+  describe('Sample teaching', () => {
+    beforeEach(async () => {
+      await dataSource.transaction(async (em) => {
+        const teachings = Array(20)
+          .fill(null)
+          .map((_, i) =>
+            em.create(TeachingEntity, {
+              id: i + 1,
+              title: `T${i + 1}`,
+              subtitle: `ST${i + 1}`,
+              chapters: [],
+            }),
+          );
+        await em.insert(TeachingEntity, teachings);
+      });
+    });
+
+    it('Returns 10 sample teachings', async () => {
+      await stFixture
+        .supertest()
+        .get('/teaching/sample')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toEqual([
+            { id: 20, title: 'T20', subtitle: 'ST20' },
+            { id: 19, title: 'T19', subtitle: 'ST19' },
+            { id: 18, title: 'T18', subtitle: 'ST18' },
+            { id: 17, title: 'T17', subtitle: 'ST17' },
+            { id: 16, title: 'T16', subtitle: 'ST16' },
+            { id: 15, title: 'T15', subtitle: 'ST15' },
+            { id: 14, title: 'T14', subtitle: 'ST14' },
+            { id: 13, title: 'T13', subtitle: 'ST13' },
+            { id: 12, title: 'T12', subtitle: 'ST12' },
+            { id: 11, title: 'T11', subtitle: 'ST11' },
+          ]);
+        });
+    });
+  });
 });
